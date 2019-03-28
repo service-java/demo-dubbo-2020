@@ -1,0 +1,2 @@
+/error
+/app/memberOrder/wxPayReturn
