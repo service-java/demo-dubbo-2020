@@ -12,13 +12,13 @@ public class AliyunOSSConfigConstant {
     }
 
     //仓库名称
-    public static final String BUCKE_NAME = "my-blog-to-use";
+    public static final String BUCKE_NAME = "luo0412";
     //地域节点
-    public static final String END_POINT = "oss-cn-beijing.aliyuncs.com";
+    public static final String END_POINT = "oss-cn-hangzhou.aliyuncs.com";
     //AccessKey ID
-    public static final String AccessKey_ID = "你的AccessKeyID";
+    public static final String AccessKey_ID = "LTAxxxxxxxxxxt9o";
     //Access Key Secret
-    public static final String AccessKey_Secret = "你的AccessKeyIDAccessKey_Secret";
+    public static final String AccessKey_Secret = "vnxxxxxxxxxxxxxxxxxxxxxxxxx5C2";
     //仓库中的某个文件夹
     public static final String FILE_HOST = "test";
 }
