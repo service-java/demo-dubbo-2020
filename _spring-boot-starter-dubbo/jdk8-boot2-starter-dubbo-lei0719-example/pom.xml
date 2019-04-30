@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.gitee.reger</groupId>
+	<artifactId>spring-boot-starter-dubbo-example</artifactId>
+	<version>1.1.2</version>
+	<packaging>pom</packaging>
+
+	<name>spring-boot-starter-dubbo-example</name>
+	<description>这是一个spring-boot-starter-dubbo的示例项目</description>
+
+	<properties>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<spring-boot-starter-dubbo.version>1.1.2</spring-boot-starter-dubbo.version>
+	</properties>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.6.RELEASE</version>
+		<relativePath />
+	</parent>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <tag>master</tag>
+        <url>https://gitee.com/lei0719/spring-boot-starter-dubbo-example</url>
+        <connection>scm:git:git@gitee.com:reger/spring-boot-starter-dubbo-example.git</connection>
+        <developerConnection>scm:git:git@gitee.com:reger/spring-boot-starter-dubbo-example.git</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>胡生</name>
+            <email>619137943@qq.com</email>
+            <organization>reger.gitee.com</organization>
+        </developer>
+    </developers>
+
+	<repositories>
+		<repository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<name>Nexus Release Repository</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+  	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gitee.reger</groupId>
+				<artifactId>example-api</artifactId>
+				<version>${spring-boot-starter-dubbo.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gitee.reger</groupId>
+				<artifactId>example-jpa-api</artifactId>
+				<version>${spring-boot-starter-dubbo.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gitee.reger</groupId>
+				<artifactId>spring-boot-starter-dubbo</artifactId>
+				<version>2.0.0</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<dependencies>
+	<!-- 如果使用dubbo2.6.0，把注释去掉 -->
+<!--  		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo</artifactId>
+			<version>2.6.4</version>
+		</dependency>  -->
+	</dependencies>
+	<modules>
+		<module>example-jpa</module>
+		<module>example</module>
+	</modules>
+	<organization>
+		<url>https://gitee.com/lei0719/spring-boot-starter-dubbo-example</url>
+		<name>reger</name>
+	</organization>
+</project>
