@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/treeTable/themes/vsStyle/treeTable.min.css" rel="stylesheet" />
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="../../assets/plugins/font-awesome/css/font-awesome.min.css">
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="../../assets/plugins/Ionicons/css/ionicons.min.css">
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<form class="form-inline">
+						<div class="form-group">
+							<label for="exampleInputName2">字典类型：</label>
+							<input type="text" class="form-control" name="type" placeholder="">
+						</div>
+						<button type="button" class="btn btn-default" onclick="search()">搜索</button>
+						<button type="button" class="btn btn-primary new_resource" onclick="addNewDict()">新建字典</button>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table id="treeTable" class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>名称</th>
+								<th>value</th>
+								<th>类型</th>
+								<th>顺序</th>
+								<th>创建时间</th>
+								<th>最后更新时间</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="dict_list">
+							<script type="text/html" id="dict_list_tmp">
+								{{each data.list as dict}}
+								<tr>
+									<td>{{dict.label}}</td>
+									<td>{{dict.value}}</td>
+									<td>{{dict.type}}</td>
+									<td>{{dict.sort}}</td>
+									<td>{{dateFormat(dict.createDate,"yyyy-MM-dd hh:mm:ss")}}</td>
+									<td>{{dateFormat(dict.updateDate,"yyyy-MM-dd hh:mm:ss")}}</td>
+									<td>
+										<button class="btn btn-default" onclick="updateDict({{dict.id}})">修改</button>
+										<button class="btn btn-danger" onclick="deleteDict({{dict.id}})">删除</button>
+									</td>
+								</tr>
+								{{/each}}
+								
+							</script>
+						</tbody>
+					</table>
+					<div id="page-content"></div>
+
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		$(function() {
+			get(domain + "sys/dicts", function(data) {
+				if(data.ret == 0) {
+					$("#page-content").html(getPage(data.data));
+					$("#dict_list").html(template('dict_list_tmp', data));
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		});
+
+		var search = function() {
+			var queryString = "";
+			$.each($("form").serializeArray(), function(index, obj) {
+				if(obj.value != "") {
+					if(queryString == "") {
+						queryString = obj.name + "=" + obj.value;
+					} else {
+						queryString += "&" + obj.name + "=" + obj.value;
+					}
+				}
+			})
+			queryString += "&page.pageNo=1";
+			get(domain + "sys/dicts?" + queryString, function(data) {
+				if(data.ret == 0) {
+					$("#page-content").html(getPage(data.data));
+					$("#dict_list").html(template('dict_list_tmp', data));
+				}
+			});
+		}
+
+		var deleteDict = function(id, name, flag) {
+			var msg = '您确定要删除吗？';
+			layer.confirm(msg, {
+				title: "删除",
+				icon: 3,
+				btn: ['确定', '取消'] //按钮
+			}, function(index) {
+				deleteMethod(domain + "sys/dict/" + id, function(data) {
+					if(data.ret == 0) {
+						layer.msg("删除成功");
+						window.location.reload();
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+				layer.close(index);
+			});
+		}
+
+		var updateDict = function(id) {
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "修改字典",
+				content: 'dict_info.html?id=' + id
+			});
+		}
+		var addNewDict = function() {
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "新建字典",
+				content: 'dict_info.html'
+			});
+		}
+
+		var reloadAndClose = function(index) {
+			layer.close(index);
+			window.location.reload();
+		}
+	</script>
+
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/ztree/jquery.ztree.all.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/js/common/resource_mapping.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<form id="user-form">
+			<script type="text/html" id="form-temp">
+				<div class="panel panel-default panel-form">
+					<input type="hidden" name="id" value="{{user.id}}" />
+					<div class="panel-body">
+						<div class="form-group">
+							<div class="form-group">
+								<input type="hidden" type="hidden" name="photo" value="{{user.photo}}" />
+								<a href="javascript:;" class="file"><img src="{{user.photo}}" id="photo-pre" alt="..." class="img-rounded" style="height: 128px;width: 128px;display: block;">
+									<input type="file" name="file" accept='image/*'>
+								</a>
+								<div class="progress" style="display: none;">
+									<div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+										0%
+									</div>
+								</div>
+							</div>
+						</div>
+						{{if user==""}}
+						<div class="form-group">
+							<label for="exampleInputEmail1">用户名</label>
+							<input type="text" class="form-control input-250" onblur="checkUserName(this)" name="name" placeholder="用户名" value="{{user.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">密码</label>
+							<input type="password" class="form-control input-250" name="password2" placeholder="密码" value="{{user.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">确认密码</label>
+							<input type="password" class="form-control input-250" onblur="checkPassward(this)" name="password" placeholder="确认密码" value="{{user.name}}">
+						</div>
+						{{/if}}
+						<div class="form-group">
+							<label for="exampleInputEmail1">昵称</label>
+							<input type="text" class="form-control input-250" name="nickname" placeholder="昵称" value="{{user.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">年龄</label>
+							<input type="text" class="form-control input-250" name="age" placeholder="年龄" value="{{user.age}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">性别</label>
+							<div class="radio form-control input-250">
+								<label>
+											  	<input type="radio" value="1" name="sex" {{user.sex==1?"checked=checked":""}}/> 男
+											  </label>
+							</div>
+							<div class="radio form-control input-250">
+								<label>
+											  	<input type="radio" value="0" name="sex"  {{user.sex==0?"checked=checked":""}}/> 女
+											  </label>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">手机号码</label>
+							<input type="text" class="form-control input-250" name="phone" placeholder="手机号码" value="{{user.phone}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">邮箱</label>
+							<input type="text" class="form-control input-250" name="email" placeholder="邮箱" value="{{user.email}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">所属机构</label>
+							<input type="hidden" name="orgId" value="{{user.orgId}}" />
+							<ul id="org-tree" class="ztree"></ul>
+						</div>
+					</div>
+					<div class="panel-footer">
+						<button type="button" onclick="addOrUpdate()" class="btn btn-default">提交</button>
+					</div>
+				</div>
+			</script>
+		</form>
+	</body>
+	<script>
+		var setting = {
+			view: {
+				selectedMulti: false
+			},
+			check: {
+				enable: true,
+				chkStyle: "radio",
+				radioType: "all"
+			},
+			callback: {
+				onCheck: function(event, treeId, treeNode) {
+					if(treeNode.checked) {
+						$("input[name='orgId']").val(treeNode.value);
+					} else {
+						$("input[name='orgId']").val("");
+					}
+				}
+			}
+		};
+
+		var checkPassward = function(p) {
+			var p2 = $("input[name='password2']").val();
+			if(p2 != p.value) {
+				layer.msg("两次输入密码不一致");
+				$(p).val("");
+			}
+		}
+
+		var checkUserName = function(obj) {
+			if(obj.value == "") {
+				return;
+			} else {
+				get(domain + "sys/users?name=" + obj.value, function(data) {
+					if(data.ret == 0) {
+						if(data.data.length > 0) {
+							layer.msg("用户名已存在");
+							$(obj).val("");
+						}
+					} else {
+						layer.msg(data.msg);
+					}
+				}, false)
+			}
+		}
+
+		var fileChange = function(file) {
+			console.log(file);
+			var parentNode = $(file).parent();
+			var form = $("<form></form>")
+			form.append(file);
+			var formData = new FormData(form[0]);
+			var request = new XMLHttpRequest();
+			var payload = sessionStorage.getItem("payload");
+			payload = JSON.parse(payload);
+			request.open("post", domain + "sys/singleUpload", true);
+			request.setRequestHeader("payload", payload.token);
+			request.upload.onprogress = function(event) {
+				var completedPercent = parseInt(event.loaded / event.total * 100);
+				if(completedPercent == 100) {
+					$(".progress").hide("slow", function() {
+						$(".progress-bar").css("width", "0%");
+						$(".progress-bar").text("0%");
+					});
+
+					return;
+				}
+				if($(".progress").is(":hidden")) {
+					$(".progress").show("slow");
+				}
+				$(".progress-bar").css("width", completedPercent + "%");
+				$(".progress-bar").text(completedPercent + "%");
+			}
+			request.onreadystatechange = function(event) {
+				if(request.readyState == 4) {
+					if(request.status = 200) {
+						var data = JSON.parse(request.responseText);
+						if(data.ret == 0) {
+							layer.msg("上传成功");
+							$("#photo-pre").attr("src", data.data)
+							$('input[name="photo"]').val(data.data);
+						} else {
+							layer.msg(data.msg);
+						}
+					}
+				}
+			}
+			request.send(formData);
+			var newFile = $("<input name='file' type='file' accept='image/*' />")
+			parentNode.append(newFile);
+			newFile.change(function() {
+				fileChange(this);
+			})
+		}
+		$(function() {
+			var id = getQueryByName("id");
+			if(id) {
+				get(domain + "sys/user/" + id, function(data) {
+					if(data.ret == 0) {
+						initTree(data.data)
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			} else {
+				initTree("");
+			}
+		});
+
+		var initTree = function(user) {
+			var data_temp = {
+				user: user
+			}
+			get(domain + "sys/orgs", function(data) {
+				if(data.ret == 0) {
+					var nodes = new Array();
+					for(var i = 0; i < data.data.length; i++) {
+						var org = data.data[i];
+						if(org.parentId == 0) {
+							var node = {
+								name: org.name,
+								value: org.id
+							};
+							if(user.orgId == org.id) {
+								node.checked = true;
+								node.open = true;
+							}
+							var children = new Array();
+							for(var l = 0; l < data.data.length; l++) {
+								var o = data.data[l];
+								if(o.parentId == org.id) {
+									var cn = {
+										name: o.name,
+										value: o.id
+									};
+									if(user.orgId == o.id) {
+										cn.checked = true;
+										node.open = true;
+									}
+									children.push(cn);
+								}
+							}
+							node.children = children;
+							nodes.push(node);
+						}
+					}
+					data_temp.parentList = data.data;
+					$("#user-form").html(template('form-temp', data_temp));
+					$("input[name='file']").on("change", function() {
+						fileChange(this)
+					})
+
+					$.fn.zTree.init($("#org-tree"), setting, nodes);
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+
+		var addOrUpdate = function() {
+			var id = $("input[name='id']").val();
+			if(id == "") {
+				post(domain + "sys/user", $("form").serialize(), function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			} else {
+				var formData = {};
+				$.each($("form").serializeArray(), function(index, obj) {
+					formData[obj.name] = obj.value
+				})
+				put(domain + "sys/user/" + id, formData, function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			}
+
+		}
+	</script>
+
+</html>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+           http://www.springframework.org/schema/beans/spring-beans.xsd   
+           http://www.springframework.org/schema/context   
+           http://www.springframework.org/schema/context/spring-context.xsd   
+           http://www.springframework.org/schema/aop   
+           http://www.springframework.org/schema/aop/spring-aop.xsd   
+           http://www.springframework.org/schema/tx    
+           http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 加载配置属性文件 -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<!-- 1:SYSTEM_PROPERTIES_MODE_FALLBACK (默认值) 2：SYSTEM_PROPERTIES_MODE_OVERRIDE -->
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="searchSystemEnvironment" value="true" /><!-- 获取环境变量 -->
+		<property name="locations">
+			<list>
+				<value>classpath:${spring.profiles.active}/application.properties
+				</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 使用Annotation自动注册Bean，解决事务失效问题：在主容器中不扫描@Controller注解，在SpringMvc中只扫描@Controller注解。 -->
+	<!-- base-package 多个package用“,”分隔 -->
+	<context:component-scan base-package="com.zksite">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>i18n.commons</value>
+				<value>i18n.messages</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="validator"
+		class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+
+</beans>

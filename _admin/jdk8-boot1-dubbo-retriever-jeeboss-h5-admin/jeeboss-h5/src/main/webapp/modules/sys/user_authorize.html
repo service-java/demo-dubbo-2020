@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/ztree/jquery.ztree.all.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/js/common/resource_mapping.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<form id="user-form">
+			<script type="text/html" id="form-temp">
+				<div class="panel panel-default panel-form">
+					<input type="hidden" name="id" value="{{user.id}}" />
+					<div class="panel-body">
+						<div class="form-group">
+							<label for="exampleInputEmail1">用户名称</label>
+							<input type="text" class="form-control input-250" readonly="readonly" id="" name="name" placeholder="角色名称" value="{{user.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">已选角色</label>
+							<input type="text" class="form-control" readonly="readonly" id="select-names" value="{{roles}}">
+						</div>
+						<div class="form-group">
+							<input type="hidden" name="orgId" value="{{user.orgId}}" />
+							<ul id="resource-tree" class="ztree input-250" style="float: left;"></ul>
+							<table class="table table-bordered input-250">
+								<tr>
+									<th>选择</th>
+									<th>角色名称</th>
+								</tr>
+								<tbody id="org-roles">
+
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div class="panel-footer">
+						<button type="button" onclick="authorizeUser()" class="btn btn-default">提交</button>
+					</div>
+				</div>
+			</script>
+		</form>
+		<script type="text/html" id="org-roles-temp">
+			{{each roles as role}}
+			<tr>
+				<td>
+					<input type="checkbox" name="roleId" onchange="selectRole(this,{{role.id}},'{{role.name}}')" value="{{role.id}}">
+				</td>
+				<td>{{role.name}}</td>
+			</tr>
+			{{/each}}
+		</script>
+	</body>
+	<script>
+		var org_role = {};
+		var roles = {};
+		var setting = {
+			view: {
+				selectedMulti: false
+			},
+			callback: {
+				onClick: function(event, treeId, treeNode) {
+					var id = treeNode.value;
+					var list = org_role[id];
+					if(list) {
+						$("#org-roles").html(template('org-roles-temp', {
+							userRoles: roles,
+							roles: list
+						}));
+						$("input[name='roleId']").each(function() {
+							var value = this.value;
+							for(var i = 0; i < roles.length; i++) {
+								if(roles[i].id == value) {
+									console.log(value);
+									$(this).attr("checked", true)
+								}
+							}
+						})
+					} else {
+						get(domain + "sys/roles?orgId=" + id, function(data) {
+							if(data.ret == 0) {
+								$("#org-roles").html(template('org-roles-temp', {
+									userRoles: roles,
+									roles: data.data
+								}));
+								org_role[id] = data.data;
+								$("input[name='roleId']").each(function() {
+									var value = this.value;
+									for(var i = 0; i < roles.length; i++) {
+										if(roles[i].id == value) {
+											$(this).attr("checked", true)
+										}
+									}
+								})
+							} else {
+								layer.msg(data.msg);
+							}
+						})
+					}
+				}
+			}
+		};
+
+		$(function() {
+			var id = getQueryByName("id");
+			if(id) {
+				get(domain + "sys/user/" + id, function(data) {
+					if(data.ret == 0) {
+						get(domain + "sys/user/" + id + "/roles", function(rdata) {
+							if(rdata.ret == 0) {
+								initTree({
+									user: data.data,
+									roles: rdata.data
+								})
+								roles = rdata.data;
+							} else {
+								layer.msg(rdata.msg);
+							}
+						});
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			} else {}
+		});
+		var tree;
+		var initTree = function(d) {
+			var rolestr = "";
+			for(var i = 0; i < d.roles.length; i++) {
+				if(rolestr == "") {
+					rolestr = d.roles[i].name;
+				} else {
+					rolestr += "，" + d.roles[i].name;
+				}
+			}
+			var data_temp = {
+				user: d.user,
+				roles: rolestr
+			}
+			get(domain + "sys/orgs", function(data) {
+				if(data.ret == 0) {
+					var nodes = new Array();
+					for(var i = 0; i < data.data.length; i++) {
+						var resource = data.data[i];
+						if(resource.parentId == 0) {
+							var node = {
+								name: resource.name,
+								value: resource.id
+							};
+							var children = new Array();
+							for(var l = 0; l < data.data.length; l++) {
+								var o = data.data[l];
+								if(o.parentId == resource.id) {
+									var cn = {
+										name: o.name,
+										value: o.id
+									};
+									children.push(cn);
+								}
+							}
+							if(children.length > 0) {
+								node.children = children;
+							}
+							nodes.push(node);
+						}
+					}
+					data_temp.parentList = data.data;
+					$("#user-form").html(template('form-temp', data_temp));
+					tree = $.fn.zTree.init($("#resource-tree"), setting, nodes);
+
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+		var authorizeUser = function() {
+			var id = getQueryByName("id");
+			var roles = new Array();
+			$('input[name="roleId"]:checked').each(function(index, obj) {
+				var role = {
+					id: obj.value
+				}
+				roles.push(role);
+			});
+			put(domain + "sys/user/" + id + "/roles", roles, function(data) {
+				if(data.ret == 0) {
+					var index = parent.layer.getFrameIndex(window.name);
+					parent.reloadAndClose(index);
+				} else {
+					layer.msg(data.msg);
+				}
+			});
+		}
+
+		var selectRole = function(obj, id, name) {
+			if(obj.checked) {
+				var value = $("#select-names").val();
+				if(value == "") {
+					$("#select-names").val(name);
+				} else {
+					value = value + "，" + name;
+					$("#select-names").val(value);
+				}
+			} else {
+				var value = $("#select-names").val();
+				var names = value.split("，");
+				var newValue = "";
+				for(var i = 0; i < names.length; i++) {
+					if(names[i] != name) {
+						newValue = newValue + names[i] + "，";
+					}
+				}
+				if(newValue != "") {
+					newValue = newValue.substring(0, newValue.length - 1);
+				}
+				$("#select-names").val(newValue);
+			}
+		}
+	</script>
+
+</html>

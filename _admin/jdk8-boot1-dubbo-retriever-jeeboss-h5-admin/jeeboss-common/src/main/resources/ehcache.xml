@@ -1,0 +1,27 @@
+<ehcache updateCheck="false">
+	<diskStore path="java.io.tempdir" />
+
+	<defaultCache maxElementsInMemory="100000" eternal="false"
+		timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="false" />
+
+	<cache name="0" maxElementsInMemory="1000000" overflowToDisk="false"
+		eternal="true" />
+
+	<cache name="5" maxElementsInMemory="1000000" overflowToDisk="false"
+		eternal="false" timeToIdleSeconds="5" timeToLiveSeconds="5" />
+
+	<cache name="30" maxElementsInMemory="1000000" overflowToDisk="false"
+		eternal="false" timeToIdleSeconds="30" timeToLiveSeconds="30" />
+
+	<cache name="60" maxElementsInMemory="1000000" overflowToDisk="false"
+		eternal="false" timeToIdleSeconds="60" timeToLiveSeconds="60" />
+
+	<cache name="300" maxElementsInMemory="1000000" overflowToDisk="false"
+		eternal="false" timeToIdleSeconds="300" timeToLiveSeconds="300" />
+
+	<cache name="1800" maxElementsInMemory="1000000" overflowToDisk="false"
+		eternal="false" timeToIdleSeconds="1800" timeToLiveSeconds="1800" />
+
+	<cache name="3600" maxElementsInMemory="1000000" overflowToDisk="false"
+		eternal="false" timeToIdleSeconds="1800" timeToLiveSeconds="3600" />
+</ehcache> 

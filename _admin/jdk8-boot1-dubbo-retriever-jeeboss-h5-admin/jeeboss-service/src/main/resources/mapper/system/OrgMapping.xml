@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zksite.jeeboss.service.system.dao.OrgDao">
+
+	<resultMap type="com.zksite.jeeboss.api.system.entity.Org" id="orgResult">
+		<result property="sort" column="sort" />
+		<result property="createDate" column="createDate" />
+		<result property="name" column="name" />
+		<result property="parentId" column="parentId" />
+	</resultMap>
+
+	<sql id="orgColumns">
+		id,
+		sort,
+		create_date,
+		name,
+		parent_id
+	</sql>
+
+	<delete id="delete">
+		DELETE FROM sys_org WHERE id = #{id}
+	</delete>
+	<select id="findList" resultMap="orgResult">
+		SELECT
+		<include refid="orgColumns" />
+		FROM sys_org WHERE
+		<if test="parentId!=null">
+			parent_id=#{parentId} and 
+		</if>
+		1=1
+		order by sort
+	</select>
+
+
+	<select id="get" resultMap="orgResult">
+		SELECT
+		<include refid="orgColumns" />
+		FROM sys_org WHERE
+		id=#{id}
+	</select>
+	<insert id="insert">
+		INSERT INTO sys_org
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="sort != null">
+				sort,
+			</if>
+				create_date,
+			<if test="name != null">
+				name,
+			</if>
+			<if test="parentId != null">
+				parent_id,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="sort != null">
+				#{sort},
+			</if>
+				now(),
+			<if test="name != null">
+				#{name},
+			</if>
+			<if test="parentId != null">
+				#{parentId},
+			</if>
+		</trim>
+
+	</insert>
+
+	<update id="update">
+		UPDATE sys_org
+		<set>
+			<if test="sort != null">
+				sort=#{sort},
+			</if>
+			<if test="createDate != null">
+				create_date=#{createDate},
+			</if>
+			<if test="name != null">
+				name=#{name},
+			</if>
+			<if test="parentId != null">
+				parent_id=#{parentId},
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+</mapper>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/treeTable/themes/vsStyle/treeTable.min.css" rel="stylesheet" />
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="../../assets/plugins/font-awesome/css/font-awesome.min.css">
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="../../assets/plugins/Ionicons/css/ionicons.min.css">
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<form class="form-inline" id="searchForm">
+						<div class="form-group">
+							<label for="exampleInputName2">姓名：</label>
+							<input type="text" class="form-control" name="name" placeholder="姓名">
+						</div>
+						<button type="button" class="btn btn-default" onclick="search()">搜索</button>
+						<button type="button" class="btn btn-primary new_resource" onclick="addNewUser()">新建用户</button>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12" id="user-content">
+					<table id="treeTable" class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>用户名</th>
+								<th>昵称</th>
+								<th>性别</th>
+								<th>年龄</th>
+								<th>所属机构</th>
+								<th>邮箱</th>
+								<th>电话</th>
+								<th>创建时间</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="user_list">
+							<script id="user_temp" type="text/html">
+								{{each data.list as user}}
+									<tr>
+										<td>{{user.name}}</td>
+										<td>{{user.nickname}}</td>
+										<td>{{user.age==0?"女":"男"}}</td>
+										<td>{{user.age}}</td>
+										<td>
+											{{if user.org}}
+												{{user.org.name}}
+											{{/if}}
+										</td>
+										<td>{{user.email}}</td>
+										<td>{{user.phone}}</td>
+										<td>{{dateFormat(user.createDate,"yyyy-MM-dd hh:mm:ss")}}</td>
+										<td>
+											<button class="btn btn-default" onclick="updateUser({{user.id}})">修改</button>
+											<button class="btn btn-success" onclick="authorize({{user.id}})">授权</button>
+											<button class="btn btn-danger" onclick="deleteUser({{user.id}})">删除</button>
+										</td>
+									</tr>
+								{{/each}}
+							</script>
+						</tbody>
+					</table>
+					<div id="page-content"></div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		$(function() {
+			get(domain + "sys/users?page.pageNo=1", function(data) {
+				if(data.ret==0){
+					$("#page-content").html(getPage(data.data));
+					$("#user_list").html(template('user_temp', data));
+				}else{
+					layer.msg(data.msg);
+				}
+			})
+		});
+		
+		var search = function(){
+			var queryString = "";
+			$.each($("form").serializeArray(), function(index, obj) {
+				if(obj.value!=""){
+					if(queryString==""){
+						queryString = obj.name+"="+obj.value;
+					}else{
+						queryString +="&"+obj.name+"="+obj.value;
+					}
+				}
+			})
+			queryString+="&page.pageNo=1";
+			get(domain + "sys/users?"+queryString,function(data){
+				if(data.ret==0){
+					$("#page-content").html(getPage(data.data));
+					$("#user_list").html(template('user_temp', data));
+				}
+			});
+		}
+		
+		var jnum = 1;
+		
+		var jump = function(num){
+			jnum = num;
+			get(domain + "sys/users?page.pageNo="+num,function(data){
+				if(data.ret==0){
+					$("#page-content").html(getPage(data.data));
+					$("#user_list").html(template('user_temp', data));
+				}
+			});
+		}
+		
+		var deleteUser = function(id){
+			layer.confirm("你确定要删除该用户", {
+				title: "删除",
+				icon: 3,
+				btn: ['确定', '取消'] //按钮
+			}, function(index) {
+				deleteMethod(domain+"sys/user/"+id,function(data){
+					window.location.reload();
+				});
+				layer.close(index);
+			});
+		}
+		
+		var authorize = function(id){
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "修改用户",
+				content: 'user_authorize.html?id='+id
+			});
+		}
+		
+		var updateUser = function(id){
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "修改用户",
+				content: 'user_info.html?id='+id
+			});
+		}
+		
+		var addNewUser = function() {
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "新建用户",
+				content: 'user_info.html'
+			});
+		}
+		
+		var reloadAndClose = function(index){
+			layer.close(index);
+			console.log(jnum);
+			jump(jnum);
+		}
+	</script>
+
+</html>

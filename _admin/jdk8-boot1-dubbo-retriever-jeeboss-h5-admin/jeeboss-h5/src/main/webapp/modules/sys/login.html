@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>登录</title>
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<style>
+			body {
+				font-family: "微软雅黑";
+				font-size: 14px;
+				background: url(http://ypstatic.zksite.com/2d/8a/86a23cc524354f94b620dfe6c26f87c0.jpg) fixed center center;
+			}
+			
+			::-webkit-input-placeholder {
+				/* WebKit browsers */
+				color: #fff;
+				font-size: 18px;
+			}
+			
+			:-moz-placeholder {
+				/* Mozilla Firefox 4 to 18 */
+				color: #fff;
+				font-size: 18px;
+			}
+			
+			::-moz-placeholder {
+				/* Mozilla Firefox 19+ */
+				color: #fff;
+				font-size: 18px;
+			}
+			
+			:-ms-input-placeholder {
+				/* Internet Explorer 10+ */
+				color: #fff;
+				font-size: 18px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="logo_box">
+			<h3>登录</h3>
+			<form action="#" name="f" method="post">
+				<div class="input_outer">
+					<span class="u_user"></span>
+					<input name="name" class="text" style="color: #FFFFFF !important" type="text" placeholder="用户名">
+				</div>
+				<div class="input_outer">
+					<span class="us_uer"></span>
+					<input name="password" class="text" placeholder="密码" style="color: #FFFFFF !important; position:absolute; z-index:100;" type="password">
+				</div>
+				<div class="mb2">
+					<a class="act-but submit" href="javascript:;" style="color: #FFFFFF" onclick="login()">登录</a>
+				</div>
+				<!--<input name="savesid" value="0" id="check-box" class="checkbox" type="checkbox"><span>记住用户名</span>-->
+			</form>
+		</div>
+	</body>
+	<script>
+		var login = function() {
+			var name = $("input[name='name']").val();
+			var pwd = $("input[name='password']").val();
+			if(name == "" || pwd == "") {
+				layer.msg("用户名或密码不能为空");
+				return;
+			}
+			$.post(domain + "session", $("form").serialize(), function(data) {
+				if(data.ret == 0) {
+					window.location.href = "main.html";
+					localStorage.setItem("payload", JSON.stringify(data.data));
+				} else {
+					layer.msg(data.msg);
+				}
+			});
+		}
+		if(self.frameElement && self.frameElement.tagName == "IFRAME" || $('#left').length > 0 || $('.jbox').length > 0) {
+			layer.alert('未登录或登录超时。请重新登录，谢谢！');
+			top.location = "login.html";
+		}
+		document.onkeydown = function(event) {
+			var e = event || window.event || arguments.callee.caller.arguments[0];
+			if(e && e.keyCode == 13) {
+				login();
+			}
+		};
+	</script>
+
+</html>

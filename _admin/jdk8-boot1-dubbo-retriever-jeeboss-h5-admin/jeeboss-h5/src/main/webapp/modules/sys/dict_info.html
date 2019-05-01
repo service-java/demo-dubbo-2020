@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/js/common/resource_mapping.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<form id="dict-form">
+			<script type="text/html" id="form-temp">
+				<div class="panel panel-default panel-form">
+					<input type="hidden" name="id" value="{{dict.id}}" />
+					<div class="panel-body">
+						<div class="form-group">
+							<label for="exampleInputEmail1">字典标签</label>
+							<input type="text" class="form-control"  name="label" placeholder="字典标签" value="{{dict.label}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">字典类型</label>
+							<input type="text" class="form-control"  name="type" placeholder="字典类型" value="{{dict.type}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">字典值</label>
+							<input type="text" class="form-control"  name="value" placeholder="字典值" value="{{dict.value}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">字典序号</label>
+							<input type="text" class="form-control"  name="sort" placeholder="字典序号" value="{{dict.sort}}">
+						</div>
+						
+					</div>
+					<div class="panel-footer">
+						<button type="button" onclick="addOrUpdate()" class="btn btn-default">提交</button>
+					</div>
+				</div>
+			</script>
+		</form>
+	</body>
+	<script>
+		$(function() {
+			var id = getQueryByName("id");
+			if(id) {
+				get(domain + "sys/dict/" + id, function(data) {
+					if(data.ret == 0) {
+						var data_temp = {
+							dict: data.data
+						}
+						get(domain + "sys/dicts?parentId=0", function(data) {
+							if(data.ret == 0) {
+								data_temp.parentList = data.data;
+								$("#dict-form").html(template('form-temp', data_temp));
+							} else {
+								layer.msg(data.msg);
+							}
+						})
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			} else {
+				var data_temp = {
+					dict: ""
+				}
+				get(domain + "sys/dicts?parentId=0", function(data) {
+					if(data.ret == 0) {
+						data_temp.parentList = data.data;
+						$("#dict-form").html(template('form-temp', data_temp));
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			}
+		});
+
+		var addOrUpdate = function() {
+			var id = $("input[name='id']").val();
+			if(id == "") {
+				post(domain + "sys/dict", $("form").serialize(), function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			} else {
+				var formData = {};
+				$.each($("form").serializeArray(), function(index, obj) {
+					formData[obj.name] = obj.value
+				})
+				put(domain + "sys/dict/" + id, formData, function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			}
+
+		}
+	</script>
+
+</html>

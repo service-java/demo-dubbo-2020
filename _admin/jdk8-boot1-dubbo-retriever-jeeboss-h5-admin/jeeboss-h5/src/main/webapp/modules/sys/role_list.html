@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/treeTable/themes/vsStyle/treeTable.min.css" rel="stylesheet" />
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="../../assets/plugins/font-awesome/css/font-awesome.min.css">
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="../../assets/plugins/Ionicons/css/ionicons.min.css">
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<form class="form-inline">
+						<!--<div class="form-group">
+							<label for="exampleInputName2">角色名称</label>
+							<input type="text" class="form-control" id="exampleInputName2" placeholder="角色名称">
+						</div>
+						<button type="submit" class="btn btn-default">搜索</button>-->
+						<button type="button" class="btn btn-primary new_resource" onclick="addNewRole()">新建角色</button>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table id="treeTable" class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>角色名称</th>
+								<th>权限标识</th>
+								<th>所属机构</th>
+								<th>创建时间</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="role_list">
+							<script type="text/html" id="role_list_tmp">
+								{{each data as role}}
+									<tr>
+										<td>{{role.name}}</td>
+										<td>{{role.permission}}</td>
+										<td>
+											{{if role.org}}
+												{{role.org.name}}
+											{{/if}}
+										</td>
+										<td>{{dateFormat(role.createDate,"yyyy-MM-dd hh:mm:ss")}}</td>
+										<td>
+											<button class="btn btn-default" onclick="updateRole({{role.id}})">修改</button>&nbsp;
+											<button class="btn btn-success" onclick="authorize({{role.id}})">授权</button>
+											<button class="btn btn-danger" onclick="deleteRole({{role.id}},'{{role.name}}')">删除</button>
+										</td>
+									</tr>
+								{{/each}}
+							</script>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		$(function() {
+			get(domain+"sys/roles",function(data){
+				if(data.ret==0){
+					$("#role_list").html(template('role_list_tmp', data));
+				}else{
+					layer.msg(data.msg);
+				}
+			});
+		});
+
+		var authorize = function(id){
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "角色授权",
+				content: 'role_authorize.html?id='+id
+			});
+		}
+
+		var updateRole = function(id){
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "修改角色",
+				content: 'role_info.html?id='+id
+			});
+		}
+		
+		var deleteRole = function(id,name){
+			var msg = "您确定要删除 “"+name+"” 吗？如果有用户被授权此角色，将会被取消授权！"
+			layer.confirm(msg, {
+				title: "删除",
+				icon: 3,
+				btn: ['确定', '取消'] //按钮
+			}, function(index) {
+				deleteMethod(domain+"sys/role/"+id,function(data){
+					window.location.reload();
+				});
+				layer.close(index);
+			});
+		}
+		var addNewRole = function() {
+			layer.open({
+				type: 2,
+				area: ['520px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "新建角色",
+				content: 'role_info.html'
+			});
+		}
+		
+		var reloadAndClose = function(index){
+			layer.close(index);
+			window.location.reload();
+		}
+	</script>
+
+</html>

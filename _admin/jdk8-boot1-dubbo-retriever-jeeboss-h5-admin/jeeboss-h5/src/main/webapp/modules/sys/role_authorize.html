@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/ztree/jquery.ztree.all.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/js/common/resource_mapping.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<form id="role-form">
+			<script type="text/html" id="form-temp">
+				<div class="panel panel-default panel-form">
+					<input type="hidden" name="id" value="{{role.id}}" />
+					<div class="panel-body">
+						<div class="form-group">
+							<label for="exampleInputEmail1">角色名称</label>
+							<input type="text" class="form-control" readonly="readonly" id="" name="name" placeholder="角色名称" value="{{role.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">资源列表</label>
+							<input type="hidden" name="orgId" value="{{role.orgId}}" />
+							<ul id="resource-tree" class="ztree"></ul>
+						</div>
+					</div>
+					<div class="panel-footer">
+						<button type="button" onclick="authorizeRole()" class="btn btn-default">提交</button>
+					</div>
+				</div>
+			</script>
+		</form>
+	</body>
+	<script>
+		var setting = {
+			view: {
+				selectedMulti: false
+			},
+			check: {
+				enable: true,
+				nocheckInherit: true
+			},
+			callback: {
+				onCheck: function(event, treeId, treeNode) {
+					if(treeNode.checked) {
+						$("input[name='orgId']").val(treeNode.value);
+					} else {
+						$("input[name='orgId']").val("");
+					}
+				}
+			}
+		};
+		$(function() {
+			var id = getQueryByName("id");
+			if(id) {
+				get(domain + "sys/role/" + id, function(data) {
+					if(data.ret == 0) {
+						initTree(data.data)
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			} else {
+				initTree("");
+			}
+		});
+		var tree;
+		var initTree = function(role) {
+			var data_temp = {
+				role: role
+			}
+			get(domain + "sys/resources", function(data) {
+				if(data.ret == 0) {
+					get(domain + "sys/role/" + role.id + "/resources", function(rdata) {
+						var roleResources = rdata.data;
+						var nodes = new Array();
+						for(var i = 0; i < data.data.length; i++) {
+							var resource = data.data[i];
+							if(resource.parentId == 0) {
+								var node = {
+									name: resource.name,
+									value: resource.id
+								};
+								node = checkResources(roleResources, resource, node);
+								var children = new Array();
+								for(var l = 0; l < data.data.length; l++) {
+									var o = data.data[l];
+									if(o.parentId == resource.id) {
+										var cn = {
+											name: o.name,
+											value: o.id
+										};
+										checkResources(roleResources, o, cn);
+										children.push(cn);
+									}
+								}
+								if(children.length > 0) {
+									node.children = children;
+								}
+								nodes.push(node);
+							}
+						}
+						console.log(nodes);
+						data_temp.parentList = data.data;
+						$("#role-form").html(template('form-temp', data_temp));
+						tree = $.fn.zTree.init($("#resource-tree"), setting, nodes);
+					})
+
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+		var checkResources = function(resources, resource, node) {
+			for(var i = 0; i < resources.length; i++) {
+				if(resources[i].id == resource.id) {
+					node.checked = true;
+					node.open = true;
+					break;
+				}
+			}
+			return node;
+		}
+
+		var authorizeRole = function() {
+			var id = getQueryByName("id");
+			var nodes = tree.getNodes();
+			var resources = new Array();
+			for(var i = 0; i < nodes.length; i++) {
+				resources = getNodeValue(nodes[i], resources);
+			}
+			var postData = {
+				resources: resources,
+				id: id
+			};
+			put(domain + "sys/role/" + id + "/resources", resources, function(data) {
+				if(data.ret == 0) {
+					var index = parent.layer.getFrameIndex(window.name);
+					parent.reloadAndClose(index);
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+
+		var getNodeValue = function(node, resources) {
+			if(node.checked) {
+				var resource = {
+					id: node.value
+				};
+				resources.push(resource);
+			}
+			var children = node.children;
+			if(children) {
+				for(var i = 0; i < children.length; i++) {
+					resources = getNodeValue(children[i], resources);
+				}
+			}
+			return resources;
+		}
+	</script>
+
+</html>

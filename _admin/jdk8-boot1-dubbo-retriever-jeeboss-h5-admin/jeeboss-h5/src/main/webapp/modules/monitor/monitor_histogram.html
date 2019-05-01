@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/ztree/jquery.ztree.all.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/laydate/laydate.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+		<script src="../../assets/plugins/echarts/echarts.min.js"></script>
+		<style>
+			.ech {
+				float: left;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<form class="form-inline">
+						<div class="form-group">
+							<label for="exampleInputName2">日期</label>
+							<input type="text" class="form-control" id="statDate" readonly="readonly" placeholder="统计日期">
+						</div>
+						<button type="button" class="btn btn-default" onclick="findList()">搜索</button>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-3">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<div id="host-list">
+								<script type="text/html" id="host-list-temp">
+									<label>应用列表：</label>
+									<div class="btn-group" role="group" aria-label="...">
+										{{each data as host}}
+										<button type="button" class="btn btn-default" onclick="listApp('{{host.application}}','{{date}}',this)">{{host.application}}</button> {{/each}}
+									</div>
+								</script>
+							</div>
+							<div id="api-list">
+								<ul id="meter-tree" class="ztree"></ul>
+								<script type="text/html" id="api-list-temp">
+
+								</script>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-7">
+					<div class="ech" id="chart" style="width: 100%;height:400px;"></div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		var dataMap = {};
+		$(function() {
+			laydate.render({
+				elem: '#statDate'
+			});
+		});
+
+		var findList = function() {
+			var date = $("#statDate").val();
+			get(domain + "monitor/historgrams/" + date + "/applications", function(data) {
+				if(data.ret == 0) {
+					$("#host-list").html(template('host-list-temp', {
+						data: data.data,
+						date: date
+					}));
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+
+		var chart = echarts.init(document.getElementById('chart'));
+		var setting = {
+			view: {
+				selectedMulti: false
+			},
+			callback: {
+				onClick: function(event, treeId, treeNode) {
+					if(treeNode.app && treeNode.ip) {
+						get(domain + "monitor/historgrams?application=" + encodeURIComponent(treeNode.app) + "&ip=" + encodeURIComponent(treeNode.ip) + "&name=" + encodeURIComponent(treeNode.name) + "&statDay=" + treeNode.date, function(cdata) {
+							if(cdata.ret == 0) {
+								var option = {
+									xAxis: {
+										type: 'category',
+										data: []
+									},
+									legend: {
+										data: ['最小耗时', '最大耗时', '平均耗时', '中位数', '75%耗时(<=)', '95%耗时(<=)', '98%耗时(<=)', '99%耗时(<=)', '99.9%耗时(<=)']
+									},
+									tooltip: {
+										trigger: 'axis'
+									},
+									yAxis: {
+										type: 'value'
+									},
+									series: []
+								};
+								var xAxis = new Array();
+								var mini = {
+									name: '最小耗时',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var max = {
+									name: '最大耗时',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var mean = {
+									name: '平均耗时',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var median = {
+									name: '中位数',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var percentile75 = {
+									name: '75%耗时(<=)',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var percentile95 = {
+									name: '95%耗时(<=)',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var percentile98 = {
+									name: '98%耗时(<=)',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var percentile99 = {
+									name: '99%耗时(<=)',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								var percentile999 = {
+									name: '99.9%耗时(<=)',
+									type: 'line',
+									stack: '总量',
+									smooth: true,
+									data: new Array()
+								};
+								for(var i = 0; i < cdata.data.length; i++) {
+									var h = cdata.data[i];
+									xAxis.push(new Date(h.moment).format("yyyy-MM-dd hh:mm:ss"))
+									mini.data.push(h.min);
+									max.data.push(h.max);
+									mean.data.push(h.mean);
+									median.data.push(h.median);
+									percentile75.data.push(h.percentile75);
+									percentile95.data.push(h.percentile95);
+									percentile98.data.push(h.percentile98);
+									percentile99.data.push(h.percentile99);
+									percentile999.data.push(h.percentile999);
+								}
+								option.xAxis.data = xAxis;
+								var series = new Array();
+								series.push(mini);
+								series.push(max);
+								series.push(mean);
+								series.push(median);
+								series.push(percentile75);
+								series.push(percentile95);
+								series.push(percentile98);
+								series.push(percentile99);
+								series.push(percentile999);
+								option.series = series;
+								console.log(series);
+								chart.setOption(option);
+							} else {
+
+							}
+						})
+					}
+
+				}
+			}
+		};
+		var listApp = function(appName, date, obj) {
+
+			$(obj).parent().find(".btn").each(function() {
+				if($(this).hasClass("btn-primary")) {
+					$(this).removeClass("btn-primary");
+				}
+			})
+			$(obj).addClass("btn-primary");
+			get(domain + "monitor/historgrams/" + date + "/" + appName + "/applications", function(data) {
+				if(data.ret == 0) {
+					var dataMap = {};
+					var nodes = new Array();
+					for(var i = 0; i < data.data.length; i++) {
+						var app = data.data[i];
+						var list = dataMap[app.ip];
+						if(list) {
+							list.push(app);
+						} else {
+							list = new Array();
+							list.push(app);
+						}
+						dataMap[app.ip] = list;
+					}
+					for(var key in dataMap) {
+						var node = {
+							name: key
+						};
+						var children = new Array();
+						for(var i = 0; i < dataMap[key].length; i++) {
+							var app = dataMap[key][i];
+							var c = {
+								name: app.name,
+								ip: key,
+								app: appName,
+								date: date
+							}
+							children.push(c);
+						}
+						node.children = children;
+						nodes.push(node);
+					}
+					$.fn.zTree.init($("#meter-tree"), setting, nodes);
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+
+		Date.prototype.format = function(fmt) {
+			var o = {
+				"M+": this.getMonth() + 1, //月份 
+				"d+": this.getDate(), //日 
+				"h+": this.getHours(), //小时 
+				"m+": this.getMinutes(), //分 
+				"s+": this.getSeconds(), //秒 
+				"q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+				"S": this.getMilliseconds() //毫秒 
+			};
+			if(/(y+)/.test(fmt)) {
+				fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+			}
+			for(var k in o) {
+				if(new RegExp("(" + k + ")").test(fmt)) {
+					fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+				}
+			}
+			return fmt;
+		}
+	</script>
+
+</html>

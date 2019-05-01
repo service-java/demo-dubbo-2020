@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/treeTable/themes/vsStyle/treeTable.min.css" rel="stylesheet" />
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="../../assets/plugins/font-awesome/css/font-awesome.min.css">
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="../../assets/plugins/Ionicons/css/ionicons.min.css">
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<form id="resource-form">
+			<script type="text/html" id="form-temp">
+				<div class="panel panel-default panel-form">
+					<input type="hidden" name="id" value="{{resource.id}}" />
+					<div class="panel-body">
+						<div class="form-group">
+							<label for="exampleInputEmail1">资源名称</label>
+							<input type="text" class="form-control" id="" name="name" placeholder="资源名称" value="{{resource.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">图标</label>
+							<i class="{{resource.icon}}" id="icon"></i>
+							<input type="text" class="form-control input-250" id="" name="" readonly="readonly" onclick="selectIcon()" placeholder="点击选择图标" value="">
+							<input type="hidden" name="icon" value="{{resource.icon}}" />
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">权限标识</label>
+							<input type="text" class="form-control" id="" name="permission" value="{{resource.permission}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">资源标识</label>
+							<input type="text" class="form-control" id="" name="url" placeholder="资源标识" value="{{resource.url}}">
+							<p class="help-block">资源链接或标识</p>
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">序号</label>
+							<input type="text" class="form-control" id="" name="sort" placeholder="资源序号" value="{{resource.sort}}">
+							<p class="help-block"></p>
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">资源类型</label>
+							<select class="form-control" name="type">
+								<option value="1" {{resource.type==1? "selected='selected'": ""}}>功能</option>
+								<option value="0" {{resource.type==0? "selected='selected'": ""}}>菜单</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">上级资源</label> {{each parentList as r}}
+							<div class="radio form-control">
+								<label>
+											    <input type="radio" name="parentId" id="{{r.id}}" {{resource.parentId==r.id?"checked='checked'":""}} value="{{r.id}}">
+											    {{r.name}}
+											  </label>
+							</div>
+							{{/each}}
+						</div>
+					</div>
+					<div class="panel-footer">
+						<button type="button" onclick="addOrUpdate()" class="btn btn-default">提交</button>
+					</div>
+				</div>
+			</script>
+		</form>
+	</body>
+	<script>
+		$(function() {
+			var id = getQueryByName("id");
+			if(id) {
+				get(domain + "sys/resource/" + id, function(data) {
+					if(data.ret == 0) {
+						var data_temp = {
+							resource: data.data
+						}
+						get(domain + "sys/resources?parentId=0", function(data) {
+							if(data.ret == 0) {
+								data_temp.parentList = data.data;
+								$("#resource-form").html(template('form-temp', data_temp));
+							} else {
+								layer.msg(data.msg);
+							}
+						})
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			} else {
+				var data_temp = {
+					resource: ""
+				}
+				get(domain + "sys/resources?parentId=0", function(data) {
+					if(data.ret == 0) {
+						data_temp.parentList = data.data;
+						$("#resource-form").html(template('form-temp', data_temp));
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			}
+		});
+
+		var addOrUpdate = function() {
+			var id = $("input[name='id']").val();
+			if(id == "") {
+				post(domain + "sys/resource", $("form").serialize(), function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			} else {
+				var formData = {};
+				$.each($("form").serializeArray(), function(index, obj) {
+					formData[obj.name] = obj.value
+				})
+				put(domain + "sys/resource/" + id, formData, function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			}
+
+		}
+
+		var iconLayerIndex = -1;
+		var selectIcon = function() {
+			iconLayerIndex = layer.open({
+				type: 2,
+				title: false,
+				area: ['600px', '360px'],
+				shade: 0.8,
+				closeBtn: 0,
+				shadeClose: true,
+				content: 'icons.html'
+			});
+		}
+
+		var setIcons = function(icon) {
+			layer.close(iconLayerIndex);
+			$("#icon").attr("class", icon)
+			$("input[name='icon']").val(icon);
+		}
+	</script>
+
+</html>

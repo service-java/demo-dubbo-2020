@@ -1,0 +1,2 @@
+callStack4ConsumerFilter=com.zksite.common.filter.CallStack4ConsumerFilter
+callStack4ProviderFilter=com.zksite.common.filter.CallStack4ProviderFilter

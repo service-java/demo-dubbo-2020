@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/treeTable/themes/vsStyle/treeTable.min.css" rel="stylesheet" />
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="../../assets/plugins/font-awesome/css/font-awesome.min.css">
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="../../assets/plugins/Ionicons/css/ionicons.min.css">
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<!--<form class="form-inline" id="searchForm">
+						<div class="form-group">
+							<label for="exampleInputName2">uid</label>
+							<input type="text" class="form-control" name="name" placeholder="uid">
+						</div>
+						<button type="button" class="btn btn-default" onclick="search()">搜索</button>
+					</form>-->
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12" id="session-content">
+					<table id="treeTable" class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>uid</th>
+								<th>用户名</th>
+								<th>昵称</th>
+								<th>登录时间</th>
+								<th>最后访问时间</th>
+								<th>会话ID</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="session_list">
+							<script id="session_temp" type="text/html">
+								{{each data.list as session}}
+								<tr>
+									<td>{{session.uid}}</td>
+									<td>{{session.name}}</td>
+									<td>{{session.nickname}}</td>
+									<td>{{dateFormat(session.createTime,"yyyy-MM-dd hh:mm:ss")}}</td>
+									<td>{{dateFormat(session.lastAccessedTime,"yyyy-MM-dd hh:mm:ss")}}</td>
+									<td>{{session.sessionId}}</td>
+									<td><button class="btn btn-danger" onclick="deleteSession('{{session.uid}}')">强制下线</button></td>
+								</tr>
+								{{/each}}
+							</script>
+						</tbody>
+					</table>
+					<div id="page-content"></div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		$(function() {
+			get(domain + "sessions?page.pageNo=1", function(data) {
+				if(data.ret == 0) {
+					$("#page-content").html(getPage(data.data));
+					$("#session_list").html(template('session_temp', data));
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		});
+
+		var jnum = 1;
+
+		var deleteSession = function(id) {
+			layer.confirm("你确定要强制该用户下线吗", {
+				title: "删除",
+				icon: 3,
+				btn: ['确定', '取消'] //按钮
+			}, function(index) {
+				deleteMethod(domain+"session/"+id,function(data){
+					window.location.reload();
+				});
+				layer.close(index);
+			});
+		}
+
+		var jump = function(num) {
+			jnum = num;
+			get(domain + "sessions?pageNo=" + num, function(data) {
+				if(data.ret == 0) {
+					$("#page-content").html(getPage(data.data));
+					$("#session_list").html(template('session_temp', data));
+				}
+			});
+		}
+	</script>
+
+</html>

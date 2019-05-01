@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/treeTable/themes/vsStyle/treeTable.min.css" rel="stylesheet" />
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="../../assets/plugins/font-awesome/css/font-awesome.min.css">
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="../../assets/plugins/Ionicons/css/ionicons.min.css">
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<!--<form class="form-inline" id="searchForm">
+						<div class="form-group">
+							<label for="exampleInputName2">姓名</label>
+							<input type="text" class="form-control" name="name" placeholder="姓名">
+						</div>
+						<button type="button" class="btn btn-default" onclick="search()">搜索</button>
+						<button type="button" class="btn btn-primary new_resource" onclick="addNewUser()">新建用户</button>
+					</form>-->
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12" id="user-content">
+					<table id="treeTable" class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>job名称</th>
+								<th>job组</th>
+								<th>cron表达式</th>
+								<th>执行间隔</th>
+								<th>执行次数</th>
+								<th>是否高可用</th>
+								<th>高可用模式</th>
+								<th>所在主机</th>
+								<th>备机列表</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="job_list">
+							<script id="job_temp" type="text/html">
+								{{each data.list as job}}
+								<tr>
+									<td>{{job.id}}</td>
+									<td>{{job.name}}</td>
+									<td>{{job.group}}</td>
+									<td>{{job.cron}}</td>
+									<td>{{job.interval}}&nbsp;/&nbsp;{{job.timeUnit}}</td>
+									<td>{{if job.repeat==-1}}永久重复 {{else}} {{job.repeat}} {{/if}}
+									</td>
+									<td>{{if job.isHAEnable}} 是{{else}} 否{{/if}}
+									</td>
+									<td>{{if job.isHAStandby}}主备模式{{else}}全活模式{{/if}}</td>
+									<td>{{job.host}}</td>
+									<td>{{each job.standbyList as host}}
+									{{host}}&nbsp;
+									{{/each}}</td>
+									<td>
+										{{if job.isHAStandby}}
+											{{if job.value=="Y"}}
+												<button class="btn btn-default" onclick="stop('{{job.id}}','PAUSE')">暂停</button>
+												<button class="btn btn-danger" onclick="stop('{{job.id}}','N_NS')">停止不切换</button>
+												<button class="btn btn-danger" onclick="stop('{{job.id}}','N')">停止切换</button>
+											{{else if job.value=="PAUSE"}}
+												<button class="btn btn-default" onclick="stop('{{job.id}}','RESUME')">恢复</button>
+											{{/if}}
+										{{else}}
+											{{if job.value=="Y"}}
+												<button class="btn btn-default" onclick="stop('{{job.id}}','PAUSE')">暂停</button>
+											{{else if job.value=="PAUSE"}}
+												<button class="btn btn-default" onclick="stop('{{job.id}}','RESUME')">恢复</button>
+											{{/if}}
+										{{/if}}
+									</td>
+								</tr>
+								{{/each}}
+							</script>
+						</tbody>
+					</table>
+					<div id="page-content"></div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		$(function() {
+			get(domain + "jobs?page.pageNo=1", function(data) {
+				if(data.ret == 0) {
+					$("#page-content").html(getPage(data.data));
+					$("#job_list").html(template('job_temp', data));
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		});
+		
+		var stop = function(id,status){
+			var fdata = {
+				id:id,
+				value:status
+			}
+			post(domain+"updateJob",fdata,function(data){
+				if(data.ret==0){
+					window.location.reload();
+				}else{
+					layer.msg(data.msg);
+				}
+			})
+		}
+	</script>
+
+</html>

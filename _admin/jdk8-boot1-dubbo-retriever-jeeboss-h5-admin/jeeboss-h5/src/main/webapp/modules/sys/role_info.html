@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/ztree/jquery.ztree.all.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/js/common/resource_mapping.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<form id="role-form">
+			<script type="text/html" id="form-temp">
+				<div class="panel panel-default panel-form">
+					<input type="hidden" name="id" value="{{role.id}}" />
+					<div class="panel-body">
+						<div class="form-group">
+							<label for="exampleInputEmail1">角色名称</label>
+							<input type="text" class="form-control" id="" name="name" placeholder="角色名称" value="{{role.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">权限标识</label>
+							<input type="text" class="form-control" id="" name="permission" placeholder="权限标识" value="{{role.permission}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail1">所属机构</label>
+							<input type="hidden" name="orgId" value="{{role.orgId}}" />
+							<ul id="org-tree" class="ztree"></ul>
+						</div>
+					</div>
+					<div class="panel-footer">
+						<button type="button" onclick="addOrUpdate()" class="btn btn-default">提交</button>
+					</div>
+				</div>
+			</script>
+		</form>
+	</body>
+	<script>
+		var setting = {
+			view: {
+				selectedMulti: false
+			},
+			check: {
+				enable: true,
+				chkStyle: "radio",
+				radioType: "all"
+			},
+			callback: {
+				onCheck: function(event, treeId, treeNode) {
+					if(treeNode.checked) {
+						$("input[name='orgId']").val(treeNode.value);
+					} else {
+						$("input[name='orgId']").val("");
+					}
+				}
+			}
+		};
+		$(function() {
+			var id = getQueryByName("id");
+			if(id) {
+				get(domain + "sys/role/" + id, function(data) {
+					if(data.ret == 0) {
+						initTree(data.data)
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			} else {
+				initTree("");
+			}
+		});
+
+		var initTree = function(role) {
+			var data_temp = {
+				role: role
+			}
+			get(domain + "sys/orgs", function(data) {
+				if(data.ret == 0) {
+					var nodes = new Array();
+					for(var i = 0; i < data.data.length; i++) {
+						var org = data.data[i];
+						if(org.parentId == 0) {
+							var node = {
+								name: org.name,
+								value: org.id
+							};
+							if(role.orgId == org.id) {
+								node.checked = true;
+								node.open = true;
+							}
+							var children = new Array();
+							for(var l = 0; l < data.data.length; l++) {
+								var o = data.data[l];
+								if(o.parentId == org.id) {
+									var cn = {
+										name: o.name,
+										value: o.id
+									};
+									if(role.orgId == o.id) {
+										cn.checked = true;
+										node.open = true;
+									}
+									children.push(cn);
+								}
+							}
+							node.children = children;
+							nodes.push(node);
+						}
+					}
+					console.log(nodes);
+					data_temp.parentList = data.data;
+					$("#role-form").html(template('form-temp', data_temp));
+					$.fn.zTree.init($("#org-tree"), setting, nodes);
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+
+		var addOrUpdate = function() {
+			var id = $("input[name='id']").val();
+			if(id == "") {
+				post(domain + "sys/role", $("form").serialize(), function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			} else {
+				var formData = {};
+				$.each($("form").serializeArray(), function(index, obj) {
+					formData[obj.name] = obj.value
+				})
+				put(domain + "sys/role/" + id, formData, function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			}
+
+		}
+	</script>
+
+</html>

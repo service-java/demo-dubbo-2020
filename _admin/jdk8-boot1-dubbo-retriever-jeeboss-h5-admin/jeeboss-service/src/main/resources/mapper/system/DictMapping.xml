@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zksite.jeeboss.service.system.dao.DictDao">
+    
+    <resultMap type="com.zksite.jeeboss.api.system.entity.Dict" id="dictResult">
+   		<result property="updateDate" column="updateDate" />
+   		<result property="createDate" column="createDate" />
+   		<result property="sort" column="sort" />
+   		<result property="type" column="type" />
+   		<result property="label" column="label" />
+   		<result property="value" column="value" />
+   		<result property="id" column="id" />
+    </resultMap>
+    
+	<sql id="dictColumns">
+		 id,
+		 update_date,
+		 create_date,
+		 sort,
+		 type,
+		 label,
+		 value
+	</sql>
+	
+	<delete id="delete">
+		DELETE FROM sys_dict  WHERE id = #{id}
+	</delete>
+	<select id="findList" resultMap="dictResult">
+		SELECT 
+		<include refid="dictColumns"/>
+		FROM sys_dict  WHERE 
+		<if test="type!=null and type!=''">
+			type=#{type} and 
+		</if>
+		1=1
+		order by sort 
+	</select>
+	
+	
+	<select id="get" resultMap="dictResult">
+		SELECT 
+		<include refid="dictColumns"/>
+		FROM sys_dict  WHERE 
+		id=#{id}
+	</select>
+	<insert id="insert">
+		INSERT INTO sys_dict
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="updateDate != null">
+				update_date,
+			</if>
+			<if test="createDate != null">
+				create_date,
+			</if>
+			<if test="sort != null">
+				sort,
+			</if>
+			<if test="type != null">
+				type,
+			</if>
+			<if test="label != null">
+				label,
+			</if>
+			<if test="value != null">
+				value,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="updateDate != null">
+				#{updateDate},
+			</if>
+			<if test="createDate != null">
+				#{createDate},
+			</if>
+			<if test="sort != null">
+				#{sort},
+			</if>
+			<if test="type != null">
+				#{type},
+			</if>
+			<if test="label != null">
+				#{label},
+			</if>
+			<if test="value != null">
+				#{value},
+			</if>
+		</trim>
+		
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_dict
+		<set>
+			<if test="updateDate != null">
+				update_date=#{updateDate},
+			</if>
+			<if test="sort != null">
+				sort=#{sort},
+			</if>
+			<if test="type != null">
+				type=#{type},
+			</if>
+			<if test="label != null">
+				label=#{label},
+			</if>
+			<if test="value != null">
+				value=#{value},
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+</mapper>

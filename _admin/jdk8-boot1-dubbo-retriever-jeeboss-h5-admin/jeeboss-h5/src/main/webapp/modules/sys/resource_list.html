@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/treeTable/themes/vsStyle/treeTable.min.css" rel="stylesheet" />
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="../../assets/plugins/font-awesome/css/font-awesome.min.css">
+		<!-- Ionicons -->
+		<link rel="stylesheet" href="../../assets/plugins/Ionicons/css/ionicons.min.css">
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<form class="form-inline">
+						<!--<div class="form-group">
+							<label for="exampleInputName2">资源名称</label>
+							<input type="text" class="form-control" id="exampleInputName2" placeholder="资源名称">
+						</div>
+						<button type="submit" class="btn btn-default">搜索</button>-->
+						<button type="button" class="btn btn-primary new_resource" onclick="addNewResource()">新建资源</button>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table id="treeTable" class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>名称</th>
+								<th>资源标识</th>
+								<th>权限标识</th>
+								<th>序号</th>
+								<th>图标</th>
+								<th>创建时间</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="resource_list">
+							<script type="text/html" id="resource_list_tmp">
+								{{each data as r}} {{if r.parentId==0}}
+								<tr id="{{r.id}}">
+									<td>{{r.name}}</td>
+									<td>{{r.url}}</td>
+									<td>{{r.permission}}</td>
+									<td>{{r.sort}}</td>
+									<td><i class="{{r.icon}}"></i></td>
+									<td>{{dateFormat(r.createDate,"yyyy-MM-dd hh:mm:ss")}}</td>
+									<td><button class="btn btn-default" onclick="updateResource({{r.id}})">修改</button>&nbsp;<button class="btn btn-danger" onclick="deleteResource({{r.id}},'{{r.name}}',true)">删除</button></td>
+								</tr>
+								{{each data as c}} {{if c.parentId==r.id}}
+								<tr pid="{{r.id}}" id="{{c.id}}">
+									<td>{{c.name}}</td>
+									<td>{{c.url}}</td>
+									<td>{{c.permission}}</td>
+									<td>{{c.sort}}</td>
+									<td><i class="{{c.icon}}"></i></td>
+									<td>{{dateFormat(c.createDate,"yyyy-MM-dd hh:mm:ss")}}</td>
+									<td><button class="btn btn-default" onclick="updateResource({{c.id}})">修改</button>&nbsp;<button class="btn btn-danger" onclick="deleteResource({{c.id}},'{{c.name}}')">删除</button></td>
+								</tr>
+								{{/if}} {{/each}} {{/if}} {{/each}}
+							</script>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		$(function() {
+			get(domain + "sys/resources", function(data) {
+				if(data.ret == 0) {
+					$("#resource_list").html(template('resource_list_tmp', data));
+					$("#treeTable").treeTable({
+						expandLevel: 2,
+						expandLevel: 1
+					});
+				} else {
+					layer.msg(data.msg);
+				}
+			});
+		});
+
+		var updateResource = function(id) {
+			layer.open({
+				type: 2,
+				area: ['620px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "修改资源",
+				content: 'resource_info.html?id=' + id
+			});
+		}
+
+		var deleteResource = function(id, name, flag) {
+			var msg = '您确定要删除 “' + name + '” 吗？';
+			if(flag) {
+				msg = '您确定要删除 “' + name + '” 吗？该资源下面所有的子资源将会被删除'
+			}
+			layer.confirm(msg, {
+				title: "删除",
+				icon: 3,
+				btn: ['确定', '取消'] //按钮
+			}, function(index) {
+				deleteMethod(domain+"sys/resource/"+id,function(data){
+					window.location.reload();
+				});
+				layer.close(index);
+			});
+		}
+
+		var addNewResource = function() {
+			layer.open({
+				type: 2,
+				area: ['620px', '85%'],
+				fixed: false, //不固定
+				maxmin: true,
+				title: "新建资源",
+				content: 'resource_info.html'
+			});
+		}
+		
+		var reloadAndClose = function(index){
+			layer.close(index);
+			window.location.reload();
+		}
+	</script>
+
+</html>

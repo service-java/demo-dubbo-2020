@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zksite.jeeboss.service.system.dao.RoleDao">
+    
+    <resultMap type="com.zksite.jeeboss.api.system.entity.Role" id="roleResult">
+   		<result property="createDate" column="createDate" />
+   		<result property="orgId" column="orgId" />
+   		<result property="name" column="name" />
+    </resultMap>
+    
+	<sql id="roleColumns">
+		 id,
+		 create_date,
+		 org_id,
+		 permission,
+		 name
+	</sql>
+	
+	<delete id="delete">
+		DELETE FROM sys_role  WHERE id = #{id}
+	</delete>
+	<select id="findList" resultMap="roleResult">
+		SELECT 
+		 r.id,
+		 r.create_date,
+		 r.org_id,
+		 r.permission,
+		 r.name,
+		 o.id as 'org.id',
+		 o.name as 'org.name'
+		FROM sys_role  r
+			left join sys_org o on r.org_id=o.id
+		WHERE 
+		<if test="orgId!=null">
+			r.org_id=#{orgId} and 
+		</if>
+		1=1
+	</select>
+	
+	
+	<select id="get" resultMap="roleResult">
+		SELECT 
+		<include refid="roleColumns"/>
+		FROM sys_role  WHERE 
+		id=#{id}
+	</select>
+	<insert id="insert">
+		INSERT INTO sys_role
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="createDate != null">
+				create_date,
+			</if>
+			<if test="orgId != null">
+				org_id,
+			</if>
+			<if test="permission != null">
+				permission,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="createDate != null">
+				#{createDate},
+			</if>
+			<if test="orgId != null">
+				#{orgId},
+			</if>
+			<if test="permission != null">
+				#{permission},
+			</if>
+			<if test="name != null">
+				#{name},
+			</if>
+		</trim>
+		
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_role
+		<set>
+			<if test="createDate != null">
+				create_date=#{createDate},
+			</if>
+			<if test="permission != null">
+				permission=#{permission},
+			</if>
+			<if test="orgId != null">
+				org_id=#{orgId},
+			</if>
+			<if test="name != null">
+				name=#{name},
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+	
+	<delete id="deleteUserRoleByRoles">
+		DELETE 
+		  from `sys_user_role` 
+		WHERE user_id = 1 
+		  AND role_id IN 
+		  <foreach collection="roles" index="index" item="item" open="(" separator="," close=")">
+                #{item.id}       
+          </foreach>    
+	</delete>
+</mapper>

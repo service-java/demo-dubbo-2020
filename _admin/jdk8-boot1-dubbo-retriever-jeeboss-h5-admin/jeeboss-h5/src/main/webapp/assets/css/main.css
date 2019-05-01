@@ -1,0 +1,79 @@
+.status-bar-container {
+	list-style: none;
+	display: inline-block;
+	margin-bottom: 0;
+	padding: 0;
+	float: left;
+	width: 100%;
+	background-color: #FFFFFF;
+	padding:5px;
+	border-bottom: 0.5px solid #d2d6de;
+	min-height: 53px;
+}
+
+.status-bar-container li {
+	float: left;
+	padding: 10px 20px;
+	background: #222D32;
+	margin: 0 2px;
+	border-bottom: 2px #3C8DBC solid;
+	position: relative;
+}
+
+.status-bar-close {
+	position: absolute;
+	right: 1px;
+	top: 1px;
+	color: #FFFFFF;
+	width: 15px;
+	height: 15px;
+	text-align: center;
+	line-height: 15px;
+	border-radius: 50%;
+	background: #ffffff;
+	color: #000000;
+}
+
+.status-bar-close:hover {
+	color: #FFFFFF;
+	background: #ef403a;
+}
+
+.status-bar-container a {
+	text-decoration: none;
+	color: #fff;
+}
+
+.status-bar-container li:hover {
+	cursor: pointer;
+	border-bottom: 2px #ef403a solid;
+}
+
+.status-bar-container .bar-active {
+	border-bottom: 2px #ef403a solid;
+}
+
+::-webkit-scrollbar {
+	width: 6px;
+	height: 5px;
+	background-color: #999;
+}
+
+/*定义滚动条的轨道，内阴影及圆角*/
+
+::-webkit-scrollbar-track {
+	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+	border-radius: 6px;
+	background-color: #f5f5f5;
+}
+
+
+/*定义滑块，内阴影及圆角*/
+
+::-webkit-scrollbar-thumb {
+	/*width: 10px;*/
+	height: 5px;
+	border-radius: 6px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+	background-color: #999;
+}

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zksite.web.common.monitor.mapper.MetricsDao">
+
+
+	<resultMap type="com.zksite.web.common.monitor.entity.HistogramEntity"
+		id="histogramResult">
+		<result property="median" column="median" />
+		<result property="percentile75" column="percentile75" />
+		<result property="percentile95" column="percentile95" />
+		<result property="percentile98" column="percentile98" />
+		<result property="percentile99" column="percentile99" />
+		<result property="percentile999" column="percentile999" />
+		<result property="stdDev" column="stdDev" />
+		<result property="mean" column="mean" />
+		<result property="max" column="max" />
+		<result property="min" column="min" />
+		<result property="ip" column="ip" />
+		<result property="name" column="name" />
+		<result property="application" column="application" />
+		<result property="moment" column="moment" />
+		<result property="statDay" column="statDay" />
+	</resultMap>
+
+	<resultMap type="com.zksite.web.common.monitor.entity.MeterEntity"
+		id="meterResult">
+		<result property="fifteenMinuteRate" column="fifteenMinuteRate" />
+		<result property="fiveMinuteRate" column="fiveMinuteRate" />
+		<result property="oneMinuteRate" column="oneMinuteRate" />
+		<result property="count" column="count" />
+		<result property="mean" column="mean" />
+		<result property="ip" column="ip" />
+		<result property="name" column="name" />
+		<result property="application" column="application" />
+		<result property="moment" column="moment" />
+		<result property="statDay" column="statDay" />
+	</resultMap>
+
+	<sql id="histogramColumns">
+		id,
+		median,
+		percentile_75,
+		percentile_95,
+		percentile_98,
+		percentile_99,
+		percentile_999,
+		std_dev,
+		mean,
+		max,
+		min,
+		ip,
+		name,
+		application,
+		moment,
+		stat_day
+	</sql>
+
+	<sql id="meterColumns">
+		id,
+		fifteen_minute_rate,
+		five_minute_rate,
+		one_minute_rate,
+		count,
+		mean,
+		ip,
+		name,
+		application,
+		moment,
+		stat_day
+	</sql>
+
+	<select id="findHistogram" resultMap="histogramResult">
+		select
+		<include refid="histogramColumns" />
+		from monitor_histogram h
+		where
+		<if test="statDay!=null">
+			h.`stat_day` = #{statDay} AND
+		</if>
+		<if test="statDay!=null">
+			h.`stat_day` = #{statDay} AND
+		</if>
+		<if test="ip!=null and ip!=''">
+			h.ip=#{ip} and 
+		</if>
+		<if test="name!=null and name!=''">
+			h.name=#{name} and
+		</if>
+		<if test="application!=null and application!=''">
+			h.application=#{application} and
+		</if>
+		1=1
+		order by moment
+	</select>
+	<select id="findMeter" resultMap="meterResult">
+		select
+		<include refid="meterColumns" />
+		from monitor_meter m
+		where
+		<if test="statDay!=null">
+			m.`stat_day` = #{statDay} AND
+		</if>
+		<if test="ip!=null and ip!=''">
+			m.ip=#{ip} and 
+		</if>
+		<if test="name!=null and name!=''">
+			m.name=#{name} and
+		</if>
+		<if test="application!=null and application!=''">
+			m.application=#{application} and
+		</if>
+		1=1
+		order by moment
+	</select>
+
+	<select id="listMeterApplications" resultMap="meterResult">
+		SELECT
+		m.`application`,
+		m.`ip` ,
+		m.name
+		FROM
+		`monitor_meter` m
+		where stat_day = #{date}
+		<if test="application!=null and application!=''">
+		 and m.application=#{application}
+		</if>
+		GROUP BY m.`application`
+		<if test="application!=null and application!=''">
+		 , m.name,m.ip
+		</if>
+	</select>
+
+	<select id="listHistogramApplications" resultMap="histogramResult">
+		SELECT
+		h.`application`,
+		h.`ip` ,
+		h.name
+		FROM
+		`monitor_histogram` h
+		WHERE stat_day = #{date}
+		<if test="application!=null and application!=''">
+			and h.application=#{application}
+		</if>
+		GROUP BY h.`application`
+		<if test="application!=null and application!=''">
+			 ,h.name,h.ip
+		</if>
+	</select>
+</mapper>

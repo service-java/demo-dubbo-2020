@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/js/common/resource_mapping.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+
+	<body>
+		<form id="org-form">
+			<script type="text/html" id="form-temp">
+				<div class="panel panel-default panel-form">
+					<input type="hidden" name="id" value="{{org.id}}" />
+					<div class="panel-heading">添加机构</div>
+					<div class="panel-body">
+						<div class="form-group">
+							<label for="exampleInputEmail1">机构名称</label>
+							<input type="text" class="form-control" id="" name="name" placeholder="资源名称" value="{{org.name}}">
+						</div>
+						<div class="form-group">
+							<label for="exampleInputPassword1">机构序号</label>
+							<input type="text" class="form-control" id="" name="sort" value="{{org.sort}}">
+						</div>
+						{{if org.parentId!=0}}
+						<div class="form-group">
+							<label for="exampleInputPassword1">上级机构</label> {{each parentList as r}}
+							<div class="radio form-control">
+								<label>
+											    <input type="radio" name="parentId" id="{{r.id}}" {{org.parentId==r.id?"checked='checked'":""}} value="{{r.id}}">
+											    {{r.name}}
+											  </label>
+							</div>
+							{{/each}}
+						</div>
+						{{/if}}
+					</div>
+					<div class="panel-footer">
+						<button type="button" onclick="addOrUpdate()" class="btn btn-default">提交</button>
+					</div>
+				</div>
+			</script>
+	</body>
+	<script>
+		$(function() {
+			var id = getQueryByName("id");
+			if(id) {
+				get(domain + "sys/org/" + id, function(data) {
+					if(data.ret == 0) {
+						var data_temp = {
+							org: data.data
+						}
+						get(domain + "sys/orgs?parentId=0", function(data) {
+							if(data.ret == 0) {
+								data_temp.parentList = data.data;
+								$("#org-form").html(template('form-temp', data_temp));
+							} else {
+								layer.msg(data.msg);
+							}
+						})
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			} else {
+				var data_temp = {
+					org: ""
+				}
+				get(domain + "sys/orgs?parentId=0", function(data) {
+					if(data.ret == 0) {
+						data_temp.parentList = data.data;
+						$("#org-form").html(template('form-temp', data_temp));
+					} else {
+						layer.msg(data.msg);
+					}
+				})
+			}
+		});
+
+		var addOrUpdate = function() {
+			var id = $("input[name='id']").val();
+			if(id == "") {
+				post(domain + "sys/org", $("form").serialize(), function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			} else {
+				var formData = {};
+				$.each($("form").serializeArray(), function(index, obj) {
+					formData[obj.name] = obj.value
+				})
+				put(domain + "sys/org/" + id, formData, function(data) {
+					if(data.ret == 0) {
+						var index = parent.layer.getFrameIndex(window.name);
+						parent.reloadAndClose(index);
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+			}
+
+		}
+	</script>
+
+</html>

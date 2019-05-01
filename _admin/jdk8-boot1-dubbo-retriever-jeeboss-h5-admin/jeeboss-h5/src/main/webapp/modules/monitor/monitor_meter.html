@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="../../assets/css/admin.css" rel="stylesheet" />
+		<link href="../../assets/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet" />
+		<script src="../../assets/js/common/jquery.min.js"></script>
+		<script src="../../assets/plugins/ztree/jquery.ztree.all.min.js"></script>
+		<script src="../../assets/plugins/layer/layer.js"></script>
+		<script src="../../assets/plugins/laydate/laydate.js"></script>
+		<script src="../../assets/plugins/treeTable/jquery.treeTable.min.js"></script>
+		<script src="../../assets/js/common/artTemplate.js"></script>
+		<script src="../../assets/js/common/common.js"></script>
+		<script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+		<script src="../../assets/plugins/echarts/echarts.min.js"></script>
+		<style>
+			.ech {
+				float: left;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container-fluid" style="padding: 0;">
+			<div class="row" style="margin-bottom: 5px;">
+				<div class="col-md-12">
+					<form class="form-inline">
+						<div class="form-group">
+							<label for="exampleInputName2">日期</label>
+							<input type="text" class="form-control" id="statDate" readonly="readonly" placeholder="统计日期">
+						</div>
+						<button type="button" class="btn btn-default" onclick="findList()">搜索</button>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-3">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<div id="host-list">
+								<script type="text/html" id="host-list-temp">
+									<label>应用列表：</label>
+									<div class="btn-group" role="group" aria-label="...">
+										{{each data as host}}
+										<button type="button" class="btn btn-default" onclick="listApp('{{host.application}}','{{date}}',this)">{{host.application}}</button> {{/each}}
+									</div>
+								</script>
+							</div>
+							<div id="api-list">
+								<ul id="meter-tree" class="ztree"></ul>
+								<script type="text/html" id="api-list-temp">
+
+								</script>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-7">
+					<h4></h4>
+					<div class="ech" id="mean" style="width: 50%;height:400px;"></div>
+					<div class="ech" id="oneMinuteRate" style="width: 50%;height:400px;"></div>
+					<div class="ech" id="fiveMinuteRate" style="width: 50%;height:400px;"></div>
+					<div class="ech" id="fifteenMinuteRate" style="width: 50%;height:400px;"></div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		var dataMap = {};
+		$(function() {
+			laydate.render({
+				elem: '#statDate'
+			});
+		});
+
+		var findList = function() {
+			var date = $("#statDate").val();
+			get(domain + "monitor/meters/" + date + "/applications", function(data) {
+				if(data.ret == 0) {
+					$("#host-list").html(template('host-list-temp', {
+						data: data.data,
+						date: date
+					}));
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+
+		var fifteenMinuteRate = echarts.init(document.getElementById('fifteenMinuteRate'));
+		var fiveMinuteRate = echarts.init(document.getElementById('fiveMinuteRate'));
+		var mean = echarts.init(document.getElementById('mean'));
+		var oneMinuteRate = echarts.init(document.getElementById('oneMinuteRate'));
+		var setting = {
+			view: {
+				selectedMulti: false
+			},
+			callback: {
+				onClick: function(event, treeId, treeNode) {
+					if(treeNode.app && treeNode.ip) {
+						get(domain + "monitor/meters?application=" + encodeURIComponent(treeNode.app) + "&ip=" + encodeURIComponent(treeNode.ip) + "&name=" + encodeURIComponent(treeNode.name) + "&statDay=" + treeNode.date, function(cdata) {
+							if(cdata.ret == 0) {
+								var data = cdata.data;
+								option = {
+									tooltip: {
+										trigger: 'axis',
+										position: function(pt) {
+											return [pt[0], '10%'];
+										}
+									},
+									title: {
+										left: 'center',
+									},
+									toolbox: {
+										feature: {
+											dataZoom: {
+												yAxisIndex: 'none'
+											},
+											restore: {},
+											saveAsImage: {}
+										}
+									},
+									xAxis: {
+										type: 'category',
+										boundaryGap: false,
+									},
+									yAxis: {
+										type: 'value',
+										boundaryGap: [0, '100%']
+									},
+									dataZoom: [{
+										type: 'inside',
+										start: 50,
+										end: 100
+									}, {
+										start: 50,
+										end: 100,
+										handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+										handleSize: '80%',
+										handleStyle: {
+											color: '#fff',
+											shadowBlur: 3,
+											shadowColor: 'rgba(0, 0, 0, 0.6)',
+											shadowOffsetX: 2,
+											shadowOffsetY: 2
+										}
+									}],
+									series: [{
+										name: '访问量/秒',
+										type: 'line',
+										smooth: true,
+										symbol: 'none',
+										sampling: 'average',
+										itemStyle: {
+											normal: {
+												color: 'rgb(255, 70, 131)'
+											}
+										},
+										areaStyle: {
+											normal: {
+												color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+													offset: 0,
+													color: 'rgb(255, 158, 68)'
+												}, {
+													offset: 1,
+													color: 'rgb(255, 70, 131)'
+												}])
+											}
+										},
+									}]
+								};
+
+								var mdate = new Array();
+								var fifteenMinuteRateData = new Array();
+								var oneMinuteRateData = new Array();
+								var fiveMinuteRateData = new Array();
+								var meanData = new Array();
+								for(var i = 0; i < data.length; i++) {
+									mdate.push(new Date(data[i].moment).format("yyyy-MM-dd hh:mm:ss"));
+									fifteenMinuteRateData.push(data[i].fifteenMinuteRate);
+									oneMinuteRateData.push(data[i].oneMinuteRate);
+									fiveMinuteRateData.push(data[i].fiveMinuteRate);
+									meanData.push(data[i].mean);
+									if(i == data.length - 1) {
+										$("h4").text("总访问量：" + data[i].count)
+									}
+								}
+								option.xAxis.data = mdate;
+								option.title.text = "15分钟平均访问量/每秒";
+								option.series[0].data = fifteenMinuteRateData;
+								fifteenMinuteRate.setOption(option);
+								option.title.text = "5分钟平均访问量/每秒";
+								option.series[0].data = fiveMinuteRateData;
+								fiveMinuteRate.setOption(option);
+								option.title.text = "1分钟平均访问量/每秒";
+								option.series[0].data = oneMinuteRateData;
+								oneMinuteRate.setOption(option);
+								option.title.text = "平均访问量/每秒";
+								option.series[0].data = meanData;
+								mean.setOption(option);
+							} else {
+
+							}
+						})
+					}
+
+				}
+			}
+		};
+		var listApp = function(appName, date, obj) {
+
+			$(obj).parent().find(".btn").each(function() {
+				if($(this).hasClass("btn-primary")) {
+					$(this).removeClass("btn-primary");
+				}
+			})
+			$(obj).addClass("btn-primary");
+			get(domain + "monitor/meters/" + date + "/" + appName + "/applications", function(data) {
+				if(data.ret == 0) {
+					var dataMap = {};
+					var nodes = new Array();
+					for(var i = 0; i < data.data.length; i++) {
+						var app = data.data[i];
+						var list = dataMap[app.ip];
+						if(list) {
+							list.push(app);
+						} else {
+							list = new Array();
+							list.push(app);
+						}
+						dataMap[app.ip] = list;
+					}
+					for(var key in dataMap) {
+						var node = {
+							name: key
+						};
+						var children = new Array();
+						for(var i = 0; i < dataMap[key].length; i++) {
+							var app = dataMap[key][i];
+							var c = {
+								name: app.name,
+								ip: key,
+								app: appName,
+								date: date
+							}
+							children.push(c);
+						}
+						node.children = children;
+						nodes.push(node);
+					}
+					$.fn.zTree.init($("#meter-tree"), setting, nodes);
+				} else {
+					layer.msg(data.msg);
+				}
+			})
+		}
+
+		Date.prototype.format = function(fmt) {
+			var o = {
+				"M+": this.getMonth() + 1, //月份 
+				"d+": this.getDate(), //日 
+				"h+": this.getHours(), //小时 
+				"m+": this.getMinutes(), //分 
+				"s+": this.getSeconds(), //秒 
+				"q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+				"S": this.getMilliseconds() //毫秒 
+			};
+			if(/(y+)/.test(fmt)) {
+				fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+			}
+			for(var k in o) {
+				if(new RegExp("(" + k + ")").test(fmt)) {
+					fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+				}
+			}
+			return fmt;
+		}
+	</script>
+
+</html>
