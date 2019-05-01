@@ -1,0 +1,284 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<!-- ====================================================== -->
+	<!-- POM 版本 -->
+	<!-- ====================================================== -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- ====================================================== -->
+	<!-- 父 POM -->
+	<!-- ====================================================== -->
+	<parent>
+		<groupId>com.kaistart</groupId>
+		<artifactId>wormhole</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+	<!-- ====================================================== -->
+	<!-- POM 类型 -->
+	<!-- ====================================================== -->
+	<packaging>war</packaging>
+
+	<!-- ====================================================== -->
+	<!-- POM GAV -->
+	<!-- ====================================================== -->
+	<artifactId>wormhole-web</artifactId>
+	<!-- ====================================================== -->
+	<!-- 项目名和组织 -->
+	<!-- ====================================================== -->
+	<url>http://www.kaishiba.com</url>
+	<name>wormhole-web</name>
+
+	<!-- ====================================================== -->
+	<!-- 开发者介绍 -->
+	<!-- ====================================================== -->
+	<developers>
+		<developer>
+			<name>deathearth</name>
+			<email>353479460@qq.com</email>
+			<organization>杭州捕翼网络科技有限公司</organization>
+		</developer>
+	</developers>
+
+
+	<!-- ====================================================== -->
+	<!-- 版本号 -->
+	<!-- ====================================================== -->
+	<properties>
+		<shiro.version>1.2.2</shiro.version>
+		<kaistart.version>1.0.0-SNAPSHOT</kaistart.version>
+	</properties>
+
+
+	<!-- ====================================================== -->
+	<!-- 组件依赖管理 -->
+	<!-- ====================================================== -->
+	<dependencies>
+
+		<!-- 项目组件依赖 -->
+		<dependency>
+			<groupId>com.kaistart</groupId>
+			<artifactId>wormhole-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.kaistart</groupId>
+			<artifactId>wormhole-domain</artifactId>
+		</dependency>
+
+		<!-- springBoot redis依赖 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+
+
+
+		<!-- servlet相关 -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+
+		<!-- 工具包 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+
+
+		<!-- 阿里系插件 -->
+		<!-- dubbo -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo</artifactId>
+			<version>2.5.3</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>spring</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- sentinel流控 sentinel管理台连接 -->
+		<dependency>
+			<groupId>com.alibaba.csp</groupId>
+			<artifactId>sentinel-core</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba.csp</groupId>
+			<artifactId>sentinel-transport-simple-http</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+		<!-- fastjson -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.28</version>
+		</dependency>
+
+		<!-- Google guava工具类 -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>19.0</version>
+		</dependency>
+
+		<!-- zk相关 -->
+		<dependency>
+			<groupId>com.github.sgroschupf</groupId>
+			<artifactId>zkclient</artifactId>
+			<version>0.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Redis 相关jar -->
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+
+
+		<!-- shiro start -->
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-core</artifactId>
+			<version>${shiro.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-web</artifactId>
+			<version>${shiro.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-spring</artifactId>
+			<version>${shiro.version}</version>
+		</dependency>
+		<!--<dependency> <groupId>org.apache.shiro</groupId> <artifactId>shiro-cas</artifactId> 
+			<version>${shiro.version}</version> </dependency> -->
+		<!-- shiro end -->
+
+
+		<!-- velocity支持 SpringBoot 1.4之后就不再支持 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-velocity</artifactId>
+			<version>1.4.2.RELEASE</version>
+		</dependency>
+
+		<!-- <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>5.1.5.RELEASE</version>
+		</dependency> -->
+
+	</dependencies>
+
+	<build>
+		<finalName>wormhole-web</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.kaistart.ApplicationRun</mainClass>
+					<executable>true</executable>
+				</configuration>
+			</plugin>
+		</plugins>
+		
+		<!-- <resources>
+			<resource>
+				<directory>src/main/webapp</directory>
+				<targetPath>META-INF/resources</targetPath>
+				<includes>
+				<include>**/**</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+				<include>**/**</include>
+				</includes>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/java</directory>
+				<excludes>
+				<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+        </resources> -->
+	</build>
+</project>
