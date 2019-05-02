@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.yan</groupId>
+    <artifactId>yan</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>yan</name>
+    <description>https://micyo202.github.io</description>
+
+    <modules>
+        <module>yan-api</module>
+        <module>yan-common</module>
+        <module>yan-core</module>
+        <module>yan-dao</module>
+        <module>yan-plugins</module>
+        <module>yan-service</module>
+        <module>yan-web</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <spring.version>4.3.13.RELEASE</spring.version>
+        <aspectj.version>1.8.13</aspectj.version>
+        <shiro.version>1.4.0</shiro.version>
+        <jackson.version>2.9.6</jackson.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <logback.version>1.2.3</logback.version>
+        <activemq.version>5.15.2</activemq.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- 添加 junit 依赖包 -->
+        <!--
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        -->
+
+    </dependencies>
+
+</project>
